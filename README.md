@@ -1,8 +1,6 @@
 ## raylib-nim
 
-raylib-nim is a nim binding for [raylib 3.0.0](https://github.com/raysan5/raylib/releases/tag/3.0.0)
-
-I just created it for learning purposes.
+raylib-nim is a nim binding for [raylib](https://github.com/raysan5/raylib)
 
 ## run
 

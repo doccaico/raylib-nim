@@ -8,13 +8,17 @@ elif defined(macosx):
 elif defined(windows):
   const LIB_RAYLIB* = "raylib.dll"
 
+
 const
+  DEFAULT_BATCH_BUFFER_ELEMENTS* = 8192
+  DEFAULT_BATCH_BUFFERS* = 1
+  DEFAULT_BATCH_DRAWCALLS* = 256
+  MAX_BATCH_ACTIVE_TEXTURES* = 4
+  MAX_MATRIX_STACK_SIZE* = 32
   MAX_SHADER_LOCATIONS* = 32
   MAX_MATERIAL_MAPS* = 12
-
-##  Texture parameters (equivalent to OpenGL defines)
-
-const
+  RL_CULL_DISTANCE_NEAR* = 0.01
+  RL_CULL_DISTANCE_FAR* = 1000.0
   RL_TEXTURE_WRAP_S* = 0x00002802
   RL_TEXTURE_WRAP_T* = 0x00002803
   RL_TEXTURE_MAG_FILTER* = 0x00002800
@@ -30,203 +34,125 @@ const
   RL_WRAP_CLAMP* = 0x0000812F
   RL_WRAP_MIRROR_REPEAT* = 0x00008370
   RL_WRAP_MIRROR_CLAMP* = 0x00008742
-
-##  Matrix modes (equivalent to OpenGL)
-
-const
   RL_MODELVIEW* = 0x00001700
   RL_PROJECTION* = 0x00001701
   RL_TEXTURE* = 0x00001702
-
-##  Primitive assembly draw modes
-
-const
   RL_LINES* = 0x00000001
   RL_TRIANGLES* = 0x00000004
   RL_QUADS* = 0x00000007
 
-##----------------------------------------------------------------------------------
-##  Types and Structures Definition
-##----------------------------------------------------------------------------------
+const
+  OPENGL_11* = 1
+  OPENGL_21* = 2
+  OPENGL_33* = 3
+  OPENGL_ES_20* = 4
 
-type
-  GlVersion* = enum
-    OPENGL_11 = 1, OPENGL_21, OPENGL_33, OPENGL_ES_20
-  byte* = cuchar
+const
+  RL_ATTACHMENT_COLOR_CHANNEL0* = 0
+  RL_ATTACHMENT_COLOR_CHANNEL1* = 1
+  RL_ATTACHMENT_COLOR_CHANNEL2* = 2
+  RL_ATTACHMENT_COLOR_CHANNEL3* = 3
+  RL_ATTACHMENT_COLOR_CHANNEL4* = 4
+  RL_ATTACHMENT_COLOR_CHANNEL5* = 5
+  RL_ATTACHMENT_COLOR_CHANNEL6* = 6
+  RL_ATTACHMENT_COLOR_CHANNEL7* = 7
+  RL_ATTACHMENT_DEPTH* = 100
+  RL_ATTACHMENT_STENCIL* = 200
+
+const
+  RL_ATTACHMENT_CUBEMAP_POSITIVE_X* = 0
+  RL_ATTACHMENT_CUBEMAP_NEGATIVE_X* = 1
+  RL_ATTACHMENT_CUBEMAP_POSITIVE_Y* = 2
+  RL_ATTACHMENT_CUBEMAP_NEGATIVE_Y* = 3
+  RL_ATTACHMENT_CUBEMAP_POSITIVE_Z* = 4
+  RL_ATTACHMENT_CUBEMAP_NEGATIVE_Z* = 5
+  RL_ATTACHMENT_TEXTURE2D* = 100
+  RL_ATTACHMENT_RENDERBUFFER* = 200
 
 
 {.push cdecl, dynlib: LIB_RAYLIB, importc.}
 
-##------------------------------------------------------------------------------------
-##  Functions Declaration - Matrix operations
-##------------------------------------------------------------------------------------
-
-##  Choose the current matrix to be transformed
 proc rlMatrixMode*(mode: cint)
-##  Push the current matrix to stack
 proc rlPushMatrix*()
-##  Pop lattest inserted matrix from stack
 proc rlPopMatrix*()
-##  Reset current matrix to identity matrix
 proc rlLoadIdentity*()
-##  Multiply the current matrix by a translation matrix
 proc rlTranslatef*(x: cfloat; y: cfloat; z: cfloat)
-##  Multiply the current matrix by a rotation matrix
 proc rlRotatef*(angleDeg: cfloat; x: cfloat; y: cfloat; z: cfloat)
-##  Multiply the current matrix by a scaling matrix
 proc rlScalef*(x: cfloat; y: cfloat; z: cfloat)
-##  Multiply the current matrix by another matrix
 proc rlMultMatrixf*(matf: ptr cfloat)
-##  Set the viewport area
 proc rlFrustum*(left: cdouble; right: cdouble; bottom: cdouble; top: cdouble;
                znear: cdouble; zfar: cdouble)
 proc rlOrtho*(left: cdouble; right: cdouble; bottom: cdouble; top: cdouble;
              znear: cdouble; zfar: cdouble)
 proc rlViewport*(x: cint; y: cint; width: cint; height: cint)
-
-##------------------------------------------------------------------------------------
-##  Functions Declaration - Vertex level operations
-##------------------------------------------------------------------------------------
-
-##  Initialize drawing mode (how to organize vertex)
 proc rlBegin*(mode: cint)
-##  Finish vertex providing
 proc rlEnd*()
-##  Define one vertex (position) - 2 int
 proc rlVertex2i*(x: cint; y: cint)
-##  Define one vertex (position) - 2 float
 proc rlVertex2f*(x: cfloat; y: cfloat)
-##  Define one vertex (position) - 3 float
 proc rlVertex3f*(x: cfloat; y: cfloat; z: cfloat)
-##  Define one vertex (texture coordinate) - 2 float
 proc rlTexCoord2f*(x: cfloat; y: cfloat)
-##  Define one vertex (normal) - 3 float
 proc rlNormal3f*(x: cfloat; y: cfloat; z: cfloat)
-##  Define one vertex (color) - 4 byte
-proc rlColor4ub*(r: byte; g: byte; b: byte; a: byte)
-##  Define one vertex (color) - 3 float
+proc rlColor4ub*(r: cuchar; g: cuchar; b: cuchar; a: cuchar)
 proc rlColor3f*(x: cfloat; y: cfloat; z: cfloat)
-##  Define one vertex (color) - 4 float
 proc rlColor4f*(x: cfloat; y: cfloat; z: cfloat; w: cfloat)
-
-##------------------------------------------------------------------------------------
-##  Functions Declaration - OpenGL equivalent functions (common to 1.1, 3.3+, ES2)
-##  NOTE: This functions are used to completely abstract raylib code from OpenGL layer
-##------------------------------------------------------------------------------------
-
-##  Enable texture usage
 proc rlEnableTexture*(id: cuint)
-##  Disable texture usage
 proc rlDisableTexture*()
-##  Set texture parameters (filter, wrap)
 proc rlTextureParameters*(id: cuint; param: cint; value: cint)
-##  Enable render texture (fbo)
-proc rlEnableRenderTexture*(id: cuint)
-##  Disable render texture (fbo), return to default framebuffer
-proc rlDisableRenderTexture*()
-##  Enable depth test
+proc rlEnableShader*(id: cuint)
+proc rlDisableShader*()
+proc rlEnableFramebuffer*(id: cuint)
+proc rlDisableFramebuffer*()
 proc rlEnableDepthTest*()
-##  Disable depth test
 proc rlDisableDepthTest*()
-##  Enable backface culling
+proc rlEnableDepthMask*()
+proc rlDisableDepthMask*()
 proc rlEnableBackfaceCulling*()
-##  Disable backface culling
 proc rlDisableBackfaceCulling*()
-##  Enable scissor test
 proc rlEnableScissorTest*()
-##  Disable scissor test
 proc rlDisableScissorTest*()
-##  Scissor test
 proc rlScissor*(x: cint; y: cint; width: cint; height: cint)
-##  Enable wire mode
 proc rlEnableWireMode*()
-##  Disable wire mode
 proc rlDisableWireMode*()
-##  Delete OpenGL texture from GPU
-proc rlDeleteTextures*(id: cuint)
-##  Delete render textures (fbo) from GPU
-proc rlDeleteRenderTextures*(target: RenderTexture2D)
-##  Delete OpenGL shader program from GPU
-proc rlDeleteShader*(id: cuint)
-##  Unload vertex data (VAO) from GPU memory
-proc rlDeleteVertexArrays*(id: cuint)
-##  Unload vertex data (VBO) from GPU memory
-proc rlDeleteBuffers*(id: cuint)
-##  Clear color buffer with color
-proc rlClearColor*(r: byte; g: byte; b: byte; a: byte)
-##  Clear used screen buffers (color and depth)
+proc rlSetLineWidth*(width: cfloat)
+proc rlGetLineWidth*(): cfloat
+proc rlEnableSmoothLines*()
+proc rlDisableSmoothLines*()
+proc rlClearColor*(r: cuchar; g: cuchar; b: cuchar; a: cuchar)
 proc rlClearScreenBuffers*()
-##  Update GPU buffer with new data
 proc rlUpdateBuffer*(bufferId: cint; data: pointer; dataSize: cint)
-##  Load a new attributes buffer
 proc rlLoadAttribBuffer*(vaoId: cuint; shaderLoc: cint; buffer: pointer; size: cint;
                         dynamic: bool): cuint
-
-##------------------------------------------------------------------------------------
-##  Functions Declaration - rlgl functionality
-##------------------------------------------------------------------------------------
-
-##  Initialize rlgl (buffers, shaders, textures, states)
 proc rlglInit*(width: cint; height: cint)
-##  De-inititialize rlgl (buffers, shaders, textures)
 proc rlglClose*()
-##  Update and draw default internal buffers
 proc rlglDraw*()
-##  Returns current OpenGL version
+proc rlCheckErrors*()
 proc rlGetVersion*(): cint
-##  Check internal buffer overflow for a given number of vertex
 proc rlCheckBufferLimit*(vCount: cint): bool
-##  Set debug marker for analysis
 proc rlSetDebugMarker*(text: cstring)
-##  Load OpenGL extensions
+proc rlSetBlendMode*(glSrcFactor: cint; glDstFactor: cint; glEquation: cint)
 proc rlLoadExtensions*(loader: pointer)
-##  Get world coordinates from screen coordinates
-proc rlUnproject*(source: Vector3; proj: Matrix; view: Matrix): Vector3
-
-####  Textures data management
-
-##  Load texture in GPU
 proc rlLoadTexture*(data: pointer; width: cint; height: cint; format: cint;
                    mipmapCount: cint): cuint
-##  Load depth texture/renderbuffer (to be attached to fbo)
-proc rlLoadTextureDepth*(width: cint; height: cint; bits: cint; useRenderBuffer: bool): cuint
-##  Load texture cubemap
+proc rlLoadTextureDepth*(width: cint; height: cint; useRenderBuffer: bool): cuint
 proc rlLoadTextureCubemap*(data: pointer; size: cint; format: cint): cuint
-##  Update GPU texture with new data
-proc rlUpdateTexture*(id: cuint; width: cint; height: cint; format: cint; data: pointer)
-##  Get OpenGL internal formats
+proc rlUpdateTexture*(id: cuint; offsetX: cint; offsetY: cint; width: cint; height: cint;
+                     format: cint; data: pointer)
 proc rlGetGlTextureFormats*(format: cint; glInternalFormat: ptr cuint;
                            glFormat: ptr cuint; glType: ptr cuint)
-##  Unload texture from GPU memory
 proc rlUnloadTexture*(id: cuint)
-##  Generate mipmap data for selected texture
 proc rlGenerateMipmaps*(texture: ptr Texture2D)
-##  Read texture pixel data
 proc rlReadTexturePixels*(texture: Texture2D): pointer
-##  Read screen pixel data (color buffer)
 proc rlReadScreenPixels*(width: cint; height: cint): ptr cuchar
-
-####  Render texture management (fbo)
-
-##  Load a render texture (with color and depth attachments)
-proc rlLoadRenderTexture*(width: cint; height: cint; format: cint; depthBits: cint;
-                         useDepthTexture: bool): RenderTexture2D
-##  Attach texture/renderbuffer to an fbo
-proc rlRenderTextureAttach*(target: RenderTexture; id: cuint; attachType: cint)
-##  Verify render texture is complete
-proc rlRenderTextureComplete*(target: RenderTexture): bool
-
-####  Vertex data management
-
-##  Upload vertex data into GPU and provided VAO/VBO ids
+proc rlLoadFramebuffer*(width: cint; height: cint): cuint
+proc rlFramebufferAttach*(fboId: cuint; texId: cuint; attachType: cint; texType: cint)
+proc rlFramebufferComplete*(id: cuint): bool
+proc rlUnloadFramebuffer*(id: cuint)
 proc rlLoadMesh*(mesh: ptr Mesh; dynamic: bool)
-##  Update vertex or index data on GPU (upload new data to one buffer)
-proc rlUpdateMesh*(mesh: Mesh; buffer: cint; num: cint)
-##  Update vertex or index data on GPU, at index
-proc rlUpdateMeshAt*(mesh: Mesh; buffer: cint; num: cint; index: cint)
-##  Draw a 3d mesh with material and transform
+proc rlUpdateMesh*(mesh: Mesh; buffer: cint; count: cint)
+proc rlUpdateMeshAt*(mesh: Mesh; buffer: cint; count: cint; index: cint)
 proc rlDrawMesh*(mesh: Mesh; material: Material; transform: Matrix)
-##  Unload mesh data from CPU and GPU
+proc rlDrawMeshInstanced*(mesh: Mesh; material: Material; transforms: ptr Matrix;
+                         count: cint)
 proc rlUnloadMesh*(mesh: Mesh)
 
-# {.pop.}
+{.pop.}

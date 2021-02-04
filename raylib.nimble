@@ -1,6 +1,6 @@
-version       = "0.1.0"
+version       = "3.5.0"
 author        = "310"
-description   = "A binding for raylib 3.0.0"
+description   = "A binding for raylib"
 license       = "zlib"
 srcDir        = "src"
 

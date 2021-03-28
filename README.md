@@ -11,3 +11,6 @@ $ make core_basic_window
 $ ./core_basic_window
 ```
 see more [examples](https://github.com/doccaico/raylib-nim/tree/main/examples)
+
+## wasm (emscripten)
+see [example](https://github.com/doccaico/playthings/tree/main/nim/raylib-wasm)

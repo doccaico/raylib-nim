@@ -628,8 +628,10 @@ template GetExtension*(filename: cstring) =
 template GetImageData*(image: Image) =
   LoadImageColors(image)
 
-
-{.push cdecl, dynlib: LIB_RAYLIB, importc.}
+when defined(emscripten):
+  {.push cdecl, importc.}
+else:
+  {.push cdecl, dynlib: LIB_RAYLIB, importc.}
 
 proc InitWindow*(width: cint; height: cint; title: cstring)
 proc WindowShouldClose*(): bool

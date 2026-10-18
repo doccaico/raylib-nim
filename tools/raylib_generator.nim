@@ -1,7 +1,4 @@
-import std / [json, nre, enumerate, paths, strutils]
-
-# const raylibDir = currentSourcePath().Path.parentDir / Path"raylib"
-let raylibHeaderDir = getCurrentDir() / Path"include"
+import std / [json, nre, enumerate, strutils]
 
 const RAYLIB_H = "\"raylib.h\""
 

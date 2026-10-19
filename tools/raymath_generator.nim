@@ -89,8 +89,10 @@ newline()
 
 addRawString("""
 type
-  Float3* = array[3, float32]
-  Float16* = array[16, float32]""", nl=true)
+  float3* {.completeStruct, bycopy.} = object
+    v*: array[3, float32]
+  float16* {.completeStruct, bycopy.} = object
+    v*: array[16, float32]""", nl=true)
 
 newline()
 

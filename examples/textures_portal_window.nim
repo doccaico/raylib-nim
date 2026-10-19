@@ -1,0 +1,114 @@
+import std / [math]
+
+import raylib
+import raymath
+import rlgl
+
+const
+  screenWidth = 800
+  screenHeight = 450
+
+proc BeginPortalMode3D(eye: Vector3 , bottomLeft: Vector3 , bottomRight: Vector3 , topLeft: Vector3 , nearPlane: float32, farPlane: float32)
+
+InitWindow(screenWidth, screenHeight, "raylib [textures] example - portal window")
+
+# Camera to navigate the "real world" (Dimension A)
+var camera = Camera3D(
+  position: Vector3(x: 0.0, y: 2.5, z: 7.0),
+  target: Vector3(x: 0.0, y: 1.8, z: 0.0),
+  up: Vector3(x: 0.0, y: 1.0, z: 0.0),
+  fovy: 45.0,
+  projection: CAMERA_PERSPECTIVE.int32)
+
+# The archway opening, in Dimension A world space (used both to draw the frame and
+# as the window rectangle the oblique projection is built from)
+var archBottomLeft = Vector3(x: -1.5, y: 0.0, z: 0.0)
+var archBottomRight = Vector3(x: 1.5, y: 0.0, z: 0.0)
+var archTopLeft = Vector3(x: -1.5, y: 4.0, z: 0.0)
+
+# The archway sits at portalA and looks out onto portalB, far away in world space.
+# Every frame, Dimension B gets rendered to a texture using the same relative eye
+# and window position, shifted by the offset between the two portals
+var portalA = Vector3(x: 0.0, y: 0.0, z: 0.0)
+var portalB = Vector3(x: 0.0, y: 0.0, z: -60.0)
+var portalView = LoadRenderTexture(480, 640)
+
+DisableCursor() # Lock cursor for first-person free camera controls
+SetTargetFPS(60)
+
+while not WindowShouldClose():
+
+  UpdateCamera(camera.addr, CAMERA_FREE.int32)
+  var time = GetTime()
+
+  # Eye and window corners, shifted into Dimension B so they match the player's
+  # actual position and viewing angle relative to the archway
+  let offset = Vector3Subtract(portalB, portalA)
+  let eyeInB = Vector3Add(camera.position, offset)
+  let blInB = Vector3Add(archBottomLeft, offset)
+  let brInB = Vector3Add(archBottomRight, offset)
+  let tlInB = Vector3Add(archTopLeft, offset)
+
+  # Render Dimension B into an offscreen texture, using an oblique projection so
+  # its perspective lines up with the archway exactly as the real camera sees it
+  BeginTextureMode(portalView)
+
+  ClearBackground(Color(r: 10, g: 5, b: 20, a: 255))
+
+  BeginPortalMode3D(eyeInB, blInB, brInB, tlInB, 0.05, 100.0)
+
+  DrawGrid(30, 0.8)
+
+  # Floating pulsing core sphere
+  let corePos = Vector3Add(portalB, Vector3(x: 0.0, y: 2.0 + sin(time * 2.5) * 0.4, z: -4.0))
+  DrawSphere(corePos, 1.2, PURPLE);
+  DrawSphereWires(corePos, 1.25, 16, 16, MAGENTA);
+
+  # EndPortalMode3D();
+
+  EndTextureMode();
+
+
+
+CloseWindow()
+
+# Starts a 3D mode using an off-axis ("oblique frustum") projection, built directly from
+# an eye point and 3 corners of a rectangular window, instead of a fovy centered straight
+# ahead of the camera. This is the standard technique for rendering a scene as seen through
+# a window that isn't necessarily faced head-on (also used for multi-monitor and VR
+# rendering) - the key difference from a normal Camera3D is that the frustum is allowed
+# to be asymmetric, so perspective lines through the window line up correctly from any
+# eye position, instead of behaving like a flat image pasted onto the window
+proc BeginPortalMode3D(eye: Vector3 , bottomLeft: Vector3 , bottomRight: Vector3 , topLeft: Vector3 , nearPlane: float32, farPlane: float32) =
+  let right = Vector3Normalize(Vector3Subtract(bottomRight, bottomLeft))
+  let up = Vector3Normalize(Vector3Subtract(topLeft, bottomLeft))
+  let normal = Vector3Normalize(Vector3CrossProduct(right, up))
+
+  # Vectors from the eye to 3 corners of the window, used to project the window onto
+  # the near plane and read off how far it extends left/right/bottom/top of the eye
+  let toBL = Vector3Subtract(bottomLeft, eye)
+  let toBR = Vector3Subtract(bottomRight, eye)
+  let toTL = Vector3Subtract(topLeft, eye)
+
+  var dist = -Vector3DotProduct(toBL, normal)
+  if dist < 0.01f: dist = 0.01 # Keep the eye from crossing the window plane
+
+  let scale = nearPlane/dist
+
+  rlDrawRenderBatchActive()
+
+  rlMatrixMode(RL_PROJECTION.int32)
+  rlPushMatrix()
+  rlSetMatrixProjection(MatrixFrustum(
+      Vector3DotProduct(right, toBL)*scale, Vector3DotProduct(right, toBR)*scale,
+      Vector3DotProduct(up, toBL)*scale, Vector3DotProduct(up, toTL)*scale,
+      nearPlane, farPlane))
+
+  # View orientation is fixed to the window's own plane (looking straight through it
+  # along its normal), NOT aimed at any target - that's what the asymmetric frustum
+  # above is for, and is what lets the eye move off to one side without distorting
+  rlMatrixMode(RL_MODELVIEW.int32)
+  rlLoadIdentity()
+  rlMultMatrixf(MatrixToFloat(MatrixLookAt(eye, Vector3Subtract(eye, normal), up)))
+
+  rlEnableDepthTest()

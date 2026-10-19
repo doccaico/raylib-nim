@@ -4,8 +4,10 @@ export
   Vector2, Vector3, Vector4, Quaternion, Matrix
 
 type
-  Float3* = array[3, float32]
-  Float16* = array[16, float32]
+  float3* {.completeStruct, bycopy.} = object
+    v*: array[3, float32]
+  float16* {.completeStruct, bycopy.} = object
+    v*: array[16, float32]
 
 template MatrixToFloat*(mat: untyped): untyped =
   (MatrixToFloatV(mat).v)

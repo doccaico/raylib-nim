@@ -35,10 +35,12 @@ CloseWindow()
 ```
 
 #### Build and Run
-```
+```sh
 $ nim --path:raylib-nim r main.nim
 # or
 $ nim --path:.. r examples\core_basic_window.nim
+# if you are using MSVC (cl.exe)
+$ nim --cc:vcc --path:.. r examples\core_basic_window.nim
 ```
 
 I was inspired by planetis-m's [naylib](https://github.com/planetis-m/naylib). Thank you.

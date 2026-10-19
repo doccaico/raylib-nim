@@ -1,7 +1,5 @@
 import std / [json, nre, enumerate, strutils]
 
-const RAYLIB_H = "\"raylib.h\""
-
 const filePath = "api/raylib_api.json"
 let jsonNode = parseFile(filePath)
 
@@ -191,7 +189,7 @@ proc addType(targetName: string, nl: bool = false) =
   let name = item["name"].getStr
   if name == targetName:
     buf &= "# " & item["description"].getStr & "\n"
-    buf &= "  " & name & "* " & "{.completeStruct, bycopy, importc, header: " & RAYLIB_H & ".} = object" & "\n"
+    buf &= "  " & name & "* " & "{.completeStruct, bycopy, importc, header: \"raylib.h\".} = object" & "\n"
     for field in item["fields"]:
       let (ok, ret) = convType(field["type"].getStr)
       if ok:
@@ -304,9 +302,6 @@ proc addFunctions() =
 addSetting()
 
 newline()
-
-# addRawString("{.push completeStruct, bycopy, importc, header: " & RAYLIB_H & ".}", nl=true)
-
 newline()
 
 addRawString("type", nl=true)
@@ -363,7 +358,6 @@ addAlias("Camera", nl=true)
 addRawString("  ModelAnimPose* = ptr Transform", nl=true)
 
 newline()
-# addRawString("{.pop.}", nl=true)
 newline()
 
 skip(posDefines) # RAYLIB_H
@@ -469,7 +463,7 @@ addCallback("AudioCallback", nl=true)
 newline()
 newline()
 
-addRawString("{.push callconv: cdecl, importc, header: " & RAYLIB_H & ".}", nl=true)
+addRawString("{.push callconv: cdecl, importc, header: \"raylib.h\".}", nl=true)
 
 newline()
 

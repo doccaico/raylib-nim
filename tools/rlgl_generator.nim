@@ -1,7 +1,5 @@
 import std / [json, enumerate, strutils]
 
-const RLGL_H = "\"rlgl.h\""
-
 const filePath = "api/rlgl_api.json"
 let jsonNode = parseFile(filePath)
 
@@ -90,7 +88,7 @@ proc addType(targetName: string, nl: bool = false) =
   let name = item["name"].getStr
   if name == targetName:
     buf &= "# " & item["description"].getStr & "\n"
-    buf &= "  " & name & "* " & "{.completeStruct, bycopy, importc, header: " & RLGL_H & ".} = object" & "\n"
+    buf &= "  " & name & "* " & "{.completeStruct, bycopy, importc, header: \"rlgl.h\".} = object" & "\n"
     for field in item["fields"]:
 
       # maybe this is rlparser's bug?
@@ -285,7 +283,7 @@ addEnum("rlFramebufferAttachTextureType", nl=true)
 addEnum("rlCullMode", nl=true)
 
 
-addRawString("{.push callconv: cdecl, header: " & RLGL_H & ".}", nl=true)
+addRawString("{.push callconv: cdecl, header: \"rlgl.h\".}", nl=true)
 
 newline()
 addFunctions()

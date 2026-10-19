@@ -1,3 +1,25 @@
+#[
+*   raylib [textures] example - portal window
+*
+*   Example demonstrates rendering a second scene to a texture and projecting it onto a
+*   quad to create the illusion of a portal window looking into another place. The second
+*   scene is rendered with an off-axis ("oblique frustum") projection matched to the
+*   viewer's actual position relative to the window, so the illusion holds up correctly
+*   as the player moves and looks around, rather than only looking right from one spot
+*
+*   Example complexity rating: [★★★★] 4/4
+*
+*   Example originally created with raylib 6.0, last time updated with raylib 6.0
+*
+*   Example contributed by PanicTitan (@PanicTitan) and reviewed by Ramon Santamaria (@raysan5)
+*
+*   Example licensed under an unmodified zlib/libpng license, which is an OSI-certified,
+*   BSD-like license that allows static linking with closed source software
+*
+*   Copyright (c) 2025 PanicTitan (@PanicTitan)
+*   Modifications Copyright (c) 2026 doccaico
+]#
+
 import std / [math]
 
 import raylib

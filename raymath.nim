@@ -87,7 +87,7 @@ proc Vector3Min*(v1: Vector3, v2: Vector3): Vector3
 proc Vector3Max*(v1: Vector3, v2: Vector3): Vector3
 proc Vector3Barycenter*(p: Vector3, a: Vector3, b: Vector3, c: Vector3): Vector3
 proc Vector3Unproject*(source: Vector3, projection: Matrix, view: Matrix): Vector3
-proc Vector3ToFloatV*(v: Vector3): Float3
+proc Vector3ToFloatV*(v: Vector3): float3
 proc Vector3Invert*(v: Vector3): Vector3
 proc Vector3Clamp*(v: Vector3, min: Vector3, max: Vector3): Vector3
 proc Vector3ClampValue*(v: Vector3, min: float32, max: float32): Vector3
@@ -136,7 +136,7 @@ proc MatrixFrustum*(left: float64, right: float64, bottom: float64, top: float64
 proc MatrixPerspective*(fovY: float64, aspect: float64, nearPlane: float64, farPlane: float64): Matrix
 proc MatrixOrtho*(left: float64, right: float64, bottom: float64, top: float64, nearPlane: float64, farPlane: float64): Matrix
 proc MatrixLookAt*(eye: Vector3, target: Vector3, up: Vector3): Matrix
-proc MatrixToFloatV*(mat: Matrix): Float16
+proc MatrixToFloatV*(mat: Matrix): float16
 proc QuaternionAdd*(q1: Quaternion, q2: Quaternion): Quaternion
 proc QuaternionAddValue*(q: Quaternion, add: float32): Quaternion
 proc QuaternionSubtract*(q1: Quaternion, q2: Quaternion): Quaternion

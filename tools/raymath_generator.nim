@@ -28,8 +28,8 @@ proc convType(typeName: string): (bool, string) =
   case typeName
   of "float": (true, "float32")
   of "float *": (true, "ptr float32")
-  of "float3": (true, "Float3")
-  of "float16": (true, "Float16")
+  of "float3": (true, "float3")
+  of "float16": (true, "float16")
   of "double": (true, "float64")
   of "int": (true, "int32")
   of "Vector2": (true, "Vector2")

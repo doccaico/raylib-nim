@@ -1,7 +1,5 @@
 import std / [json, enumerate, strutils]
 
-const RAYMATH_H = "\"raymath.h\""
-
 const filePath = "api/raymath_api.json"
 let jsonNode = parseFile(filePath)
 
@@ -89,26 +87,26 @@ newline()
 
 addRawString("""
 type
-  float3* {.completeStruct, bycopy.} = object
+  float3* {.completeStruct, bycopy, header: "raymath.h".} = object
     v*: array[3, float32]
-  float16* {.completeStruct, bycopy.} = object
+  float16* {.completeStruct, bycopy, header: "raymath.h".} = object
     v*: array[16, float32]""", nl=true)
 
 newline()
 
 addRawString("""
-template MatrixToFloat*(mat: untyped): untyped =
-  (MatrixToFloatV(mat).v)""", nl=true)
+template MatrixToFloat*(mat: Matrix): array[16, float32] =
+  MatrixToFloatV(mat).v""", nl=true)
 
 newline()
 
 addRawString("""
-template Vector3ToFloat*(vec: untyped): untyped =
-  (Vector3ToFloatV(vec).v)""", nl=true)
+template Vector3ToFloat*(vec: Vector3): array[16, float32] =
+  Vector3ToFloatV(vec).v""", nl=true)
 
 newline()
 
-addRawString("{.push callconv: cdecl, header: " & RAYMATH_H & ".}", nl=true)
+addRawString("{.push callconv: cdecl, header: \"raymath.h\".}", nl=true)
 
 newline()
 addFunctions()

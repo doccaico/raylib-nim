@@ -4,11 +4,12 @@ import raylib
 import raymath
 import rlgl
 
+proc BeginPortalMode3D(eye: Vector3 , bottomLeft: Vector3 , bottomRight: Vector3 , topLeft: Vector3 , nearPlane: float32, farPlane: float32)
+proc EndPortalMode3D()
+
 const
   screenWidth = 800
   screenHeight = 450
-
-proc BeginPortalMode3D(eye: Vector3 , bottomLeft: Vector3 , bottomRight: Vector3 , topLeft: Vector3 , nearPlane: float32, farPlane: float32)
 
 InitWindow(screenWidth, screenHeight, "raylib [textures] example - portal window")
 
@@ -64,11 +65,66 @@ while not WindowShouldClose():
   DrawSphere(corePos, 1.2, PURPLE);
   DrawSphereWires(corePos, 1.25, 16, 16, MAGENTA);
 
-  # EndPortalMode3D();
+  # Orbiting cubes
+  for i in 0..4:
+    let angle = time * 1.5 + i.float * (PI / 2.0)
+    let pos = Vector3Add(portalB, Vector3(
+      x: sin(angle) * 2.5,
+      y: 2.0 + cos(time * 3.0 + i.float) * 0.5,
+      z: -4.0 + cos(angle) * 2.5))
+    DrawCube(pos, 0.5, 0.5, 0.5, LIME)
+    DrawCubeWires(pos, 0.52, 0.52, 0.52, DARKGREEN)
 
-  EndTextureMode();
+  EndPortalMode3D()
 
+  EndTextureMode()
 
+  BeginDrawing()
+
+  ClearBackground(RAYWHITE)
+
+  BeginMode3D(camera)
+
+  DrawGrid(20, 1.0f);
+
+  # Side pillars
+  DrawCube(Vector3(x: -3.5, y: 2.0, z: 0.0), 0.8, 4.0, 0.8, DARKGRAY)
+  DrawCubeWires(Vector3(x: -3.5, y: 2.0, z: 0.0), 0.8, 4.0, 0.8, ORANGE)
+  DrawCube(Vector3(x: 3.5, y: 2.0, z: 0.0), 0.8, 4.0, 0.8, DARKGRAY)
+  DrawCubeWires(Vector3(x: 3.5, y: 2.0, z: 0.0), 0.8, 4.0, 0.8, ORANGE)
+
+  # Golden archway frame and solid base
+  DrawCubeWires(Vector3(x: 0.0, y: 2.0, z: 0.0), 3.2, 4.2, 0.2, GOLD)
+  DrawCube(Vector3(x: 0.0, y: 0.05, z: 0.0), 3.4, 0.1, 0.6, MAROON)
+
+  # Solid backing wall, only ever seen if looking at the archway from behind
+  DrawCube(Vector3(x: 0.0, y: 2.0, z: -0.05), 3.1, 4.1, 0.05, MAROON)
+
+  # The portal opening itself: a plain quad textured with the Dimension B
+  # render, filling the archway exactly, so nothing "leaks" outside its shape
+  rlSetTexture(portalView.texture.id)
+
+  rlBegin(RL_QUADS)
+  rlColor4ub(255, 255, 255, 255)
+  rlNormal3f(0.0, 0.0, 1.0)
+  rlTexCoord2f(0.0, 0.0); rlVertex3f(archBottomLeft.x, archBottomLeft.y, archBottomLeft.z)
+  rlTexCoord2f(1.0, 0.0); rlVertex3f(archBottomRight.x, archBottomRight.y, archBottomRight.z)
+  rlTexCoord2f(1.0, 1.0); rlVertex3f(archBottomRight.x, 4.0, archBottomRight.z)
+  rlTexCoord2f(0.0, 1.0); rlVertex3f(archTopLeft.x, archTopLeft.y, archTopLeft.z)
+  rlEnd()
+
+  rlSetTexture(0)
+
+  EndMode3D()
+
+  # HUD overlay
+  DrawRectangle(15, 15, 520, 100, Fade(BLACK, 0.75))
+  DrawRectangleLines(15, 15, 520, 100, GOLD)
+  DrawText("PORTAL WINDOW", 28, 25, 20, GOLD)
+  DrawText("Look through the golden arch into Dimension B", 28, 52, 20, RAYWHITE)
+  DrawText("Controls: Mouse to look | WASD to move", 28, 80, 20, GRAY)
+
+  EndDrawing()
 
 CloseWindow()
 
@@ -109,6 +165,21 @@ proc BeginPortalMode3D(eye: Vector3 , bottomLeft: Vector3 , bottomRight: Vector3
   # above is for, and is what lets the eye move off to one side without distorting
   rlMatrixMode(RL_MODELVIEW.int32)
   rlLoadIdentity()
-  rlMultMatrixf(MatrixToFloat(MatrixLookAt(eye, Vector3Subtract(eye, normal), up)))
+
+  var matFloat = MatrixToFloat(MatrixLookAt(eye, Vector3Subtract(eye, normal), up))
+  rlMultMatrixf(cast[ptr float32](matFloat.addr))
 
   rlEnableDepthTest()
+
+# End portal 3D mode and returns to default 2D orthographic mode
+# NOTE: Similar implementation to EndMode3D()
+proc EndPortalMode3D() =
+  rlDrawRenderBatchActive() # Update and draw internal render batch
+
+  rlMatrixMode(RL_PROJECTION.int32) # Switch to projection matrix
+  rlPopMatrix() # Restore previous matrix (projection) from matrix stack
+
+  rlMatrixMode(RL_MODELVIEW.int32) # Switch back to modelview matrix
+  rlLoadIdentity() # Reset current matrix (modelview)
+
+  rlDisableDepthTest() # Disable DEPTH_TEST for 2D

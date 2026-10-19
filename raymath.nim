@@ -4,16 +4,16 @@ export
   Vector2, Vector3, Vector4, Quaternion, Matrix
 
 type
-  float3* {.completeStruct, bycopy.} = object
+  float3* {.completeStruct, bycopy, header: "raymath.h".} = object
     v*: array[3, float32]
-  float16* {.completeStruct, bycopy.} = object
+  float16* {.completeStruct, bycopy, header: "raymath.h".} = object
     v*: array[16, float32]
 
-template MatrixToFloat*(mat: untyped): untyped =
-  (MatrixToFloatV(mat).v)
+template MatrixToFloat*(mat: Matrix): array[16, float32] =
+  MatrixToFloatV(mat).v
 
-template Vector3ToFloat*(vec: untyped): untyped =
-  (Vector3ToFloatV(vec).v)
+template Vector3ToFloat*(vec: Vector3): array[16, float32] =
+  Vector3ToFloatV(vec).v
 
 {.push callconv: cdecl, header: "raymath.h".}
 

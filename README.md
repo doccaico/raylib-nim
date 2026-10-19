@@ -34,9 +34,11 @@ while not WindowShouldClose():
 CloseWindow()
 ```
 
-#### Build
+#### Build and Run
 ```
-$ nim c main.nim
+$ nim --path:raylib-nim r main.nim
+# or
+$ nim --path:.. r examples\core_basic_window.nim
 ```
 
 I was inspired by planetis-m's [naylib](https://github.com/planetis-m/naylib). Thank you.

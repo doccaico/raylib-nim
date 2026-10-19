@@ -191,10 +191,6 @@ proc addType(targetName: string, nl: bool = false) =
   let name = item["name"].getStr
   if name == targetName:
     buf &= "# " & item["description"].getStr & "\n"
-
-
-# addRawString("{.push completeStruct, bycopy, importc, header: " & RAYLIB_H & ".}", nl=true)
-
     buf &= "  " & name & "* " & "{.completeStruct, bycopy, importc, header: " & RAYLIB_H & ".} = object" & "\n"
     for field in item["fields"]:
       let (ok, ret) = convType(field["type"].getStr)
